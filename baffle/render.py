@@ -34,16 +34,24 @@ from common import CLASSIFICATION_BOT
 from common import CLASSIFICATION_HUMAN
 from common import CLASSIFICATION_ORDER
 from common import CLASSIFICATION_UNKNOWN
-from common import WAFFLE_BASE
-from common import WAFFLE_DARK
-from common import WAFFLE_DEEP
-from common import WAFFLE_LIGHT
-from common import WAFFLE_MID
-from common import WAFFLE_MIST
-from common import WAFFLE_PALE
+from common import INTRINSIC_BG
+from common import INTRINSIC_BG_POSTER_URL
+from common import INTRINSIC_BG_VIDEO_URL
+from common import INTRINSIC_BLACK
+from common import INTRINSIC_CHARCOAL
+from common import INTRINSIC_DARK
+from common import INTRINSIC_GREY_50
+from common import INTRINSIC_GREY_100
+from common import INTRINSIC_GREY_200
+from common import INTRINSIC_GREY_300
+from common import INTRINSIC_GREY_400
+from common import INTRINSIC_GREY_600
+from common import INTRINSIC_GREY_800
+from common import INTRINSIC_WHITE
 from common import find_latest_analyzed_file
-from common import waffle_favicon_data_uri
-from common import waffle_icon
+from common import intrinsic_favicon_data_uri
+from common import intrinsic_logo_svg
+from common import intrinsic_mark_svg
 
 GROUP_ICON = {
     CLASSIFICATION_HUMAN: '&#129489;',   # person
@@ -68,7 +76,7 @@ def detect_repo_url():
             url = url[:-4]
         return url
     except Exception:
-        return "https://github.com/asymingt/baffle_maker"
+        return "https://github.com/intrinsic-opensource/intrinsic-triage"
 
 
 def parse_iso(value):
@@ -87,7 +95,7 @@ def render_row(row, users, icon_sm, row_number):
     user = users.get(author, {})
     author_url = 'https://github.com/' + author
     is_maintainer = user.get('is_ros_maintainer', False)
-    maintainer_badge = ' <span class="maintainer-badge" title="ROS maintainer">&#9733;</span>' if is_maintainer else ''
+    maintainer_badge = ' <span class="maintainer-badge" title="Maintainer">&#9733;</span>' if is_maintainer else ''
     tooltip_parts = []
     if user.get('account_age_days'):
         tooltip_parts.append('Account age: %s' % format_age(user['account_age_days']))
@@ -95,7 +103,7 @@ def render_row(row, users, icon_sm, row_number):
         # Search-restricted account: the public_* counts are all zero
         # placeholders, so show the burst inputs that drove the call instead.
         tooltip_parts.append('Public history hidden by GitHub')
-        tooltip_parts.append('Open ROS PRs: %d (peak %d/hr)' % (
+        tooltip_parts.append('Open PRs: %d (peak %d/hr)' % (
             user['open_pr_count'], user.get('max_pr_burst', 0)))
     else:
         if user.get('public_pull_requests') is not None:
@@ -142,7 +150,7 @@ def render_group(classification, rows, users, icon_sm, start_index):
         </thead>
         <tbody>
           <tr class="empty-fortnight-row" style="display: none;">
-            <td colspan="7" style="text-align: center; padding: 2rem; color: var(--waffle-base); font-style: italic;">
+            <td colspan="7" style="text-align: center; padding: 2rem; color: var(--intr-grey-600); font-style: italic;">
               No PRs were found for the last fortnight. Use the links below to pull up older issues.
             </td>
           </tr>
@@ -156,9 +164,10 @@ def render_html(data, generated_at):
     rows = data.get('pull_requests', [])
     users = data.get('users', {})
     repo_url = detect_repo_url()
-    icon_lg = waffle_icon(size=64, cell_id='hero', include_defs=False)
-    icon_sm = waffle_icon(size=28, cell_id='row', include_defs=False)
-    favicon = waffle_favicon_data_uri()
+    icon_lg = intrinsic_mark_svg(size=48, color=INTRINSIC_BLACK)
+    icon_sm = intrinsic_mark_svg(size=20, color='currentColor')
+    intrinsic_logo = intrinsic_logo_svg(height=32, color=INTRINSIC_BLACK)
+    favicon = intrinsic_favicon_data_uri()
 
     grouped = {classification: [] for classification in CLASSIFICATION_ORDER}
     for row in rows:
@@ -182,109 +191,171 @@ def render_html(data, generated_at):
     else:
         sections_html = f'''    <div class="empty-plate">
       {icon_lg}
-      <p>No waffles today &mdash; the plate is clean!</p>
+      <p>No open pull requests waiting for triage &mdash; the queue is clear!</p>
     </div>'''
-        badge_text = '0 open on the plate'
+        badge_text = '0 open pull requests'
 
     return f'''<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>The Baffle Board</title>
+<title>Intrinsic Issue and Pull Request Triage Board</title>
 <link rel="icon" href="{favicon}">
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <style>
   :root {{
-    --waffle-dark: {WAFFLE_DARK};
-    --waffle-deep: {WAFFLE_DEEP};
-    --waffle-base: {WAFFLE_BASE};
-    --waffle-mid: {WAFFLE_MID};
-    --waffle-light: {WAFFLE_LIGHT};
-    --waffle-pale: {WAFFLE_PALE};
-    --waffle-mist: {WAFFLE_MIST};
+    --intr-black: {INTRINSIC_BLACK};
+    --intr-charcoal: {INTRINSIC_CHARCOAL};
+    --intr-dark: {INTRINSIC_DARK};
+    --intr-grey-800: {INTRINSIC_GREY_800};
+    --intr-grey-600: {INTRINSIC_GREY_600};
+    --intr-grey-400: {INTRINSIC_GREY_400};
+    --intr-grey-300: {INTRINSIC_GREY_300};
+    --intr-grey-200: {INTRINSIC_GREY_200};
+    --intr-grey-100: {INTRINSIC_GREY_100};
+    --intr-grey-50: {INTRINSIC_GREY_50};
+    --intr-white: {INTRINSIC_WHITE};
+    --intr-bg: {INTRINSIC_BG};
   }}
   * {{ box-sizing: border-box; }}
   body {{
     margin: 0;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background:
-      radial-gradient(circle at 8px 8px, var(--waffle-pale) 2px, transparent 2px) 0 0 / 32px 32px,
-      var(--waffle-mist);
-    color: var(--waffle-dark);
+    background-color: var(--intr-bg);
+    background-image: radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.05) 1px, transparent 0);
+    background-size: 24px 24px;
+    color: var(--intr-black);
     min-height: 100vh;
   }}
   .hero {{
-    background: linear-gradient(135deg, var(--waffle-deep), var(--waffle-base) 55%, var(--waffle-mid));
-    color: var(--waffle-mist);
-    padding: 2.5rem 1.5rem 3rem;
+    position: relative;
+    overflow: hidden;
+    padding: 3.5rem 1.5rem 4rem;
     text-align: center;
-    box-shadow: 0 6px 18px rgba(18, 50, 31, 0.35);
+    background-color: var(--intr-white);
+    border-bottom: 1px solid var(--intr-grey-200);
   }}
-  .hero-icons {{
-    display: flex;
-    justify-content: center;
-    gap: 0.75rem;
-    margin-bottom: 1rem;
+  .hero-bg-media {{
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
   }}
-  .hero-icons .waffle-icon {{ filter: drop-shadow(0 3px 4px rgba(0,0,0,0.25)); }}
+  .hero-bg-video {{
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.55;
+  }}
+  @media (prefers-reduced-motion) {{
+    .hero-bg-video {{ display: none; }}
+  }}
+  .hero-overlay {{
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.55) 0%, rgba(248, 248, 250, 0.92) 100%);
+  }}
+  .hero-content {{
+    position: relative;
+    z-index: 2;
+    max-width: 850px;
+    margin: 0 auto;
+  }}
+  .hero-logo-wrap {{
+    margin-bottom: 1.25rem;
+    display: inline-block;
+  }}
+  .hero-logo-link {{
+    display: inline-block;
+    color: var(--intr-black);
+    text-decoration: none;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }}
+  .hero-logo-link:hover {{
+    transform: scale(1.03);
+    opacity: 0.8;
+  }}
+  .hero-logo-link svg {{
+    display: block;
+    height: 32px;
+    width: auto;
+  }}
   .hero h1 {{
-    margin: 0 0 0.35rem;
+    margin: 0 0 0.5rem;
     font-size: 2.25rem;
-    letter-spacing: 0.02em;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    color: var(--intr-black);
   }}
   .hero p {{
-    margin: 0.25rem 0;
-    opacity: 0.9;
+    margin: 0.25rem 0 0.8rem;
+    color: var(--intr-grey-600);
+    font-size: 1.05rem;
+    line-height: 1.5;
   }}
   .badge {{
     display: inline-block;
     margin-top: 0.75rem;
-    padding: 0.35rem 0.9rem;
-    background: rgba(232, 245, 233, 0.15);
-    border: 1px solid rgba(232, 245, 233, 0.4);
+    padding: 0.35rem 1rem;
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid var(--intr-grey-300);
     border-radius: 999px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+    color: var(--intr-black);
   }}
   .repo-link {{
     display: inline-block;
-    margin-top: 0.5rem;
-    margin-bottom: 0.5rem;
-    color: var(--waffle-pale);
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+    color: var(--intr-grey-600);
     transition: color 0.15s ease, transform 0.15s ease;
   }}
   .repo-link:hover {{
-    color: white;
-    transform: scale(1.08);
+    color: var(--intr-black);
+    transform: scale(1.1);
   }}
   main {{
     max-width: 1400px;
     margin: -1.75rem auto 3rem;
     padding: 0 1.5rem;
+    position: relative;
+    z-index: 5;
   }}
   .group {{
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(18, 50, 31, 0.18);
+    background: var(--intr-white);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.03);
     overflow: hidden;
-    border: 1px solid var(--waffle-pale);
-    margin-bottom: 1.5rem;
+    border: 1px solid var(--intr-grey-200);
+    margin-bottom: 2rem;
   }}
   .group-heading {{
     margin: 0;
     padding: 1rem 1.25rem;
-    background: var(--waffle-deep);
-    color: var(--waffle-mist);
-    font-size: 1.1rem;
+    background: var(--intr-charcoal);
+    color: var(--intr-white);
+    font-size: 1.05rem;
+    font-weight: 600;
+    border-top: 3px solid var(--intr-black);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
   }}
   .count-badge {{
     display: inline-block;
-    background: rgba(232, 245, 233, 0.2);
+    background: rgba(255, 255, 255, 0.16);
+    color: var(--intr-white);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 999px;
     padding: 0.1rem 0.6rem;
-    font-size: 0.85rem;
-    margin-left: 0.4rem;
+    font-size: 0.8rem;
+    margin-left: 0.3rem;
   }}
   table {{
     width: 100%;
@@ -293,82 +364,109 @@ def render_html(data, generated_at):
   }}
   thead th {{
     text-align: left;
-    background: var(--waffle-mist);
-    color: var(--waffle-deep);
+    background: var(--intr-grey-50);
+    color: var(--intr-grey-800);
     padding: 0.85rem 1rem;
-    border-bottom: 2px solid var(--waffle-light);
+    border-bottom: 1px solid var(--intr-grey-200);
     text-transform: uppercase;
     font-size: 0.75rem;
-    letter-spacing: 0.06em;
+    font-weight: 600;
+    letter-spacing: 0.05em;
   }}
   tbody tr {{
-    border-bottom: 1px solid var(--waffle-mist);
+    border-bottom: 1px solid var(--intr-grey-200);
     transition: background 0.15s ease;
   }}
-  tbody tr:nth-child(even) {{ background: var(--waffle-mist); }}
-  tbody tr:hover {{ background: var(--waffle-pale); }}
-  td {{ padding: 0.65rem 1rem; vertical-align: middle; }}
-  .col-num {{ width: 30px; color: #5a6b5f; font-size: 0.85rem; }}
+  tbody tr:nth-child(even) {{ background: var(--intr-grey-50); }}
+  tbody tr:hover {{ background: #f0f0f4; }}
+  td {{ padding: 0.7rem 1rem; vertical-align: middle; }}
+  .col-num {{ width: 30px; color: var(--intr-grey-600); font-size: 0.85rem; }}
   .col-icon {{ width: 44px; }}
   .waffle-container {{
     position: relative;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     width: 28px;
     height: 28px;
     vertical-align: middle;
   }}
-  .waffle-container input[type="checkbox"] {{
+  .waffle-container .intrinsic-mark {{
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    color: var(--intr-grey-300);
+    pointer-events: none;
+    transition: color 0.15s ease;
+  }}
+  .waffle-container:hover .intrinsic-mark {{
+    color: var(--intr-black);
+  }}
+  .waffle-container input[type="checkbox"] {{
+    position: relative;
+    z-index: 1;
     margin: 0;
     cursor: pointer;
+    accent-color: var(--intr-black);
+    width: 15px;
+    height: 15px;
   }}
   .pill {{
     display: inline-block;
-    background: var(--waffle-pale);
-    color: var(--waffle-deep);
+    background: var(--intr-grey-100);
+    color: var(--intr-black);
+    border: 1px solid var(--intr-grey-300);
     border-radius: 999px;
     padding: 0.2rem 0.7rem;
     font-size: 0.8rem;
     font-weight: 600;
     white-space: nowrap;
+    transition: background 0.15s ease, border-color 0.15s ease;
   }}
-
+  .pill:hover {{
+    background: var(--intr-grey-200);
+    border-color: var(--intr-grey-400);
+  }}
   .col-title a {{
-    color: var(--waffle-base);
+    color: var(--intr-black);
     text-decoration: none;
     font-weight: 600;
   }}
-  .col-title a:hover {{ text-decoration: underline; }}
+  .col-title a:hover {{
+    color: var(--intr-grey-600);
+    text-decoration: underline;
+  }}
   .col-repo {{ width: 280px; }}
   .col-author {{ width: 180px; }}
   .col-author a {{
-    color: var(--waffle-deep);
+    color: var(--intr-grey-800);
     text-decoration: none;
     white-space: nowrap;
   }}
-  .col-author a:hover {{ text-decoration: underline; }}
-  .maintainer-badge {{ color: #f9a825; cursor: default; }}
+  .col-author a:hover {{
+    color: var(--intr-black);
+    text-decoration: underline;
+  }}
+  .maintainer-badge {{ color: #f59e0b; cursor: default; margin-left: 3px; }}
   .col-ai {{ width: 60px; text-align: center; font-size: 1.1rem; cursor: default; }}
-  .col-updated {{ width: 140px; color: #5a6b5f; white-space: nowrap; }}
+  .col-updated {{ width: 140px; color: var(--intr-grey-600); white-space: nowrap; }}
   .empty-plate {{
     text-align: center;
-    padding: 3rem 1rem;
-    color: var(--waffle-base);
+    padding: 3.5rem 1rem;
+    color: var(--intr-grey-600);
   }}
-  .empty-plate .waffle-icon {{ margin-bottom: 1rem; }}
+  .empty-plate svg {{ margin-bottom: 1rem; color: var(--intr-grey-300); }}
   footer {{
     max-width: 1400px;
-    margin: 0 auto 2rem;
+    margin: 0 auto 2.5rem;
     padding: 0 1.5rem;
     text-align: center;
-    color: var(--waffle-base);
+    color: var(--intr-grey-600);
     font-size: 0.85rem;
   }}
-  footer .waffle-icon {{ width: 20px; height: 20px; vertical-align: middle; margin: 0 2px; opacity: 0.7; }}
-  code {{ background: var(--waffle-mist); padding: 0.1rem 0.4rem; border-radius: 4px; }}
+  footer .footer-icons {{ margin-bottom: 0.5rem; }}
+  footer .intrinsic-mark {{ vertical-align: middle; color: var(--intr-grey-300); }}
+  code {{ background: var(--intr-grey-100); color: var(--intr-dark); padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.85em; border: 1px solid var(--intr-grey-200); }}
   @media (max-width: 640px) {{
     table {{ font-size: 0.85rem; }}
     .col-updated, .col-author {{ display: none; }}
@@ -379,49 +477,51 @@ def render_html(data, generated_at):
     align-items: center;
     gap: 1.5rem;
     padding: 1.25rem;
-    background: var(--waffle-mist);
-    border-top: 1px solid var(--waffle-light);
+    background: var(--intr-grey-50);
+    border-top: 1px solid var(--intr-grey-200);
   }}
   .pagination button {{
-    background: var(--waffle-base);
+    background: var(--intr-black);
     color: white;
-    border: none;
+    border: 1px solid var(--intr-black);
     border-radius: 6px;
-    padding: 0.5rem 1rem;
-    font-size: 0.9rem;
+    padding: 0.5rem 1.1rem;
+    font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    transition: background 0.15s ease, transform 0.1s ease;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
   }}
   .pagination button:hover:not(:disabled) {{
-    background: var(--waffle-deep);
+    background: var(--intr-grey-800);
+    border-color: var(--intr-grey-800);
     transform: translateY(-1px);
   }}
   .pagination button:active:not(:disabled) {{
     transform: translateY(0);
   }}
   .pagination button:disabled {{
-    background: var(--waffle-pale);
-    color: var(--waffle-light);
+    background: var(--intr-grey-100);
+    color: var(--intr-grey-400);
+    border-color: var(--intr-grey-200);
     cursor: not-allowed;
     box-shadow: none;
   }}
   .pagination-info {{
-    font-size: 0.95rem;
-    color: var(--waffle-dark);
+    font-size: 0.9rem;
+    color: var(--intr-grey-600);
     font-weight: 600;
     user-select: none;
   }}
   .pr-tooltip {{
     position: absolute;
     display: none;
-    background: #1e1e1e;
+    background: var(--intr-charcoal);
     color: #f5f5f5;
-    border: 1px solid #444;
+    border: 1px solid var(--intr-grey-800);
     border-radius: 8px;
     padding: 1rem;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
     pointer-events: auto;
     max-width: 950px;
     max-height: 700px;
@@ -436,8 +536,8 @@ def render_html(data, generated_at):
     font-size: 0.95rem;
     margin-top: 0;
     margin-bottom: 0.5rem;
-    color: var(--waffle-light);
-    border-bottom: 1px solid #444;
+    color: var(--intr-white);
+    border-bottom: 1px solid var(--intr-grey-800);
     padding-bottom: 0.25rem;
   }}
   .pr-tooltip-body {{
@@ -450,7 +550,7 @@ def render_html(data, generated_at):
     margin-bottom: 0.75rem;
   }}
   .pr-tooltip-body code {{
-    background: #2d2d2d;
+    background: var(--intr-dark);
     color: #f8f8f2;
     padding: 0.1rem 0.3rem;
     border-radius: 3px;
@@ -458,7 +558,7 @@ def render_html(data, generated_at):
     font-size: 0.85rem;
   }}
   .pr-tooltip-body pre {{
-    background: #2d2d2d;
+    background: var(--intr-dark);
     padding: 0.75rem;
     border-radius: 6px;
     overflow-x: auto;
@@ -474,7 +574,7 @@ def render_html(data, generated_at):
   .pr-tooltip-body h1, .pr-tooltip-body h2, .pr-tooltip-body h3 {{
     margin-top: 1rem;
     margin-bottom: 0.5rem;
-    color: var(--waffle-light);
+    color: var(--intr-white);
     font-size: 1rem;
   }}
   .pr-tooltip-body ul, .pr-tooltip-body ol {{
@@ -486,7 +586,7 @@ def render_html(data, generated_at):
     margin-bottom: 0.25rem;
   }}
   .pr-tooltip-body a {{
-    color: var(--waffle-light);
+    color: var(--intr-grey-300);
     text-decoration: underline;
   }}
   .pr-tooltip-body a:hover {{
@@ -495,44 +595,36 @@ def render_html(data, generated_at):
 </style>
 </head>
 <body>
-  <svg style="position: absolute; width: 0; height: 0; overflow: hidden;" version="1.1" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <linearGradient id="body-row" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="{WAFFLE_MID}"/>
-        <stop offset="100%" stop-color="{WAFFLE_BASE}"/>
-      </linearGradient>
-      <linearGradient id="pocket-row" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="{WAFFLE_DEEP}"/>
-        <stop offset="100%" stop-color="{WAFFLE_DARK}"/>
-      </linearGradient>
-      <linearGradient id="body-hero" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="{WAFFLE_MID}"/>
-        <stop offset="100%" stop-color="{WAFFLE_BASE}"/>
-      </linearGradient>
-      <linearGradient id="pocket-hero" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="{WAFFLE_DEEP}"/>
-        <stop offset="100%" stop-color="{WAFFLE_DARK}"/>
-      </linearGradient>
-    </defs>
-  </svg>
   <div class="hero">
-    <div class="hero-icons">{icon_lg}{icon_lg}{icon_lg}</div>
-    <h1>The Baffle Board</h1>
-    <p>Unassigned, unlabeled ROS&nbsp;2 &amp; ament pull requests waiting for a reviewer.</p>
-    <a href="{repo_url}" target="_blank" rel="noopener" class="repo-link" title="View Source on GitHub">
-      <svg class="github-logo" viewBox="0 0 16 16" version="1.1" width="24" height="24" aria-hidden="true" fill="currentColor">
-        <path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.35 3.12.88.01.64.01 1.11.01 1.28 0 .21-.15.46-.55.38A8.013 8.013 0 0 1 0 8c0-4.42 3.58-8 8-8z"></path>
-      </svg>
-    </a>
-    <br>
-    <span class="badge">{badge_text}</span>
+    <div class="hero-bg-media">
+      <video class="hero-bg-video" autoplay loop muted playsinline poster="{INTRINSIC_BG_POSTER_URL}">
+        <source src="{INTRINSIC_BG_VIDEO_URL}" type="video/mp4">
+      </video>
+      <div class="hero-overlay"></div>
+    </div>
+    <div class="hero-content">
+      <div class="hero-logo-wrap">
+        <a href="https://www.intrinsic.ai/" target="_blank" rel="noopener" class="hero-logo-link" title="Intrinsic">
+          {intrinsic_logo}
+        </a>
+      </div>
+      <h3>Issue and Pull Request Triage Board</h3>
+      <p>Unassigned, unlabeled intrinsic-ai and intrinsic-opensource pull requests waiting for a reviewer.</p>
+      <a href="{repo_url}" target="_blank" rel="noopener" class="repo-link" title="View Source on GitHub">
+        <svg class="github-logo" viewBox="0 0 16 16" version="1.1" width="22" height="22" aria-hidden="true" fill="currentColor">
+          <path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.35 3.12.88.01.64.01 1.11.01 1.28 0 .21-.15.46-.55.38A8.013 8.013 0 0 1 0 8c0-4.42 3.58-8 8-8z"></path>
+        </svg>
+      </a>
+      <br>
+      <span class="badge">{badge_text}</span>
+    </div>
   </div>
   <main>
 {sections_html}
   </main>
   <footer>
-    {icon_sm}{icon_sm}{icon_sm}
-    <p>Generated {generated_at.strftime('%b %d, %Y %H:%M UTC')} by <code>baffle_maker</code>.</p>
+    <div class="footer-icons">{icon_sm}</div>
+    <p>Generated {generated_at.strftime('%b %d, %Y %H:%M UTC')} for Intrinsic triage.</p>
   </footer>
   <script>
     const GENERATED_AT = "{generated_at.isoformat()}";

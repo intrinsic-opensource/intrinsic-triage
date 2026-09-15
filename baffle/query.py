@@ -40,17 +40,7 @@ excluded_labels = [
     'more-information-needed',
 ]
 
-excluded_repos = [
-    'ros2/cartographer_ros',
-    'ros2/cartographer',
-    'ros2/domain_bridge',
-    'ros2/pmc_scripts',
-    'ros2/rclc',
-    'ros2/rmw_iceoryx',
-    'ros2/ros1_bridge',
-    'ros2/rosbag2',
-    'ros2/safety_working_group',
-]
+excluded_repos = []
 
 excluded_projects = ['ros2/52']
 
