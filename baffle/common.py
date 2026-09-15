@@ -30,7 +30,7 @@ WAFFLE_LIGHT = '#81c784'
 WAFFLE_PALE = '#c8e6c9'
 WAFFLE_MIST = '#e8f5e9'
 
-ORGS = ['ros2', 'ament']
+ORGS = ['intrinsic-ai', 'intrinsic-opensource']
 
 # The GitHub API only reveals org members who've made their membership
 # public unless the querying token's own account is a member (see
@@ -38,30 +38,12 @@ ORGS = ['ros2', 'ament']
 # ros2/ament members whose membership is concealed from that check, so
 # they're force-included regardless of what the live lookup returns.
 ROS_MAINTAINER_OVERRIDES = [
-    'ahcorde',
-    'alsora',
     'asymingt',
-    'christophebedard',
-    'clalancette',
-    'claraberendsen',
     'cottsay',
-    'Crola1702',
-    'emersonknapp',
-    'esteve',
-    'fujitatomoya',
-    'InvincibleRMC',
-    'JEnoch',
-    'jmachowinski',
     'kscottz',
-    'MichaelOrlov',
-    'MiguelCompany',
-    'mjcarroll',
-    'skyegalaxy',
     'sloretz',
     'tfoote',
     'wjwwood',
-    'Yadunund',
-    'YuanYuYuan',
 ]
 
 DATE_FILE_FORMAT = '%Y-%m-%d'
