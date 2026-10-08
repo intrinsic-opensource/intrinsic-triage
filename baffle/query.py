@@ -42,7 +42,7 @@ excluded_labels = [
 
 excluded_repos = []
 
-excluded_projects = ['ros2/52']
+excluded_projects = []
 
 
 def build_search(weeks=None):
@@ -227,10 +227,11 @@ def main():
 
     auth = Auth.Token(key)
     gh = Github(auth=auth)
+    gh_public = Github()
 
     search = build_search(weeks=args.weeks)
     print("Search:", search)
-    pull_requests = fetch_pull_requests(gh, search)
+    pull_requests = fetch_pull_requests(gh_public, search)
     for row in pull_requests:
         print('%s,"%s"' % (row['url'], row['title']))
 
